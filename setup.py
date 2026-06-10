@@ -36,10 +36,18 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "requests>=2.25.0",
-        "pdfplumber>=0.6.0",
     ],
     extras_require={
+        "pdf": [
+            "pdfplumber>=0.6.0",
+        ],
         "dev": [
+            "pytest>=6.0",
+            "black>=21.0",
+            "flake8>=3.9",
+        ],
+        "all": [
+            "pdfplumber>=0.6.0",
             "pytest>=6.0",
             "black>=21.0",
             "flake8>=3.9",
