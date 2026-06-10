@@ -30,11 +30,19 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.25.0",
-    "pdfplumber>=0.6.0",
 ]
 
 [project.optional-dependencies]
+pdf = [
+    "pdfplumber>=0.6.0",
+]
 dev = [
+    "pytest>=6.0",
+    "black>=21.0",
+    "flake8>=3.9",
+]
+all = [
+    "pdfplumber>=0.6.0",
     "pytest>=6.0",
     "black>=21.0",
     "flake8>=3.9",
