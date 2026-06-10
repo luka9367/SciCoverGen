@@ -5,6 +5,4 @@ requests>=2.25.0
 matplotlib>=3.5.0
 numpy>=1.20.0
 Pillow>=9.0.0
-
-# PDF 解析为可选依赖，需要时请单独安装:
-# pip install pdfplumber
+pdfplumber>=0.6.0

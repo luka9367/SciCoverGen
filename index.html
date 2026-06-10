@@ -553,19 +553,19 @@
                     </p>
                     <div class="grid md:grid-cols-2 gap-4">
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
-                            <div class="text-xs text-slate-500 mb-2"># 论文概念配图（输入：本地文本/MD 文件）</div>
-                            scicovergen paper.md --mode image --style conference_diagram
+                            <div class="text-xs text-slate-500 mb-2"># 论文概念配图（输入：本地 PDF / 文本 / MD）</div>
+                            scicovergen paper.pdf --mode image --style conference_diagram
                         </div>
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
-                            <div class="text-xs text-slate-500 mb-2"># 精确矢量流程图（输入：含算法描述的文本）</div>
-                            scicovergen paper.md --mode diagram
+                            <div class="text-xs text-slate-500 mb-2"># 精确矢量流程图（输入：本地 PDF / 文本）</div>
+                            scicovergen paper.pdf --mode diagram
                         </div>
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
                             <div class="text-xs text-slate-500 mb-2"># 实验数据图表（输入：JSON 数据文件）</div>
                             scicovergen data.json --mode data_plot --plot-style bar_paired_delta
                         </div>
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
-                            <div class="text-xs text-slate-500 mb-2"># 图像风格复现（输入：参考 PNG 图片）</div>
+                            <div class="text-xs text-slate-500 mb-2"># 图像风格复现（输入：本地 PNG / JPG 图片）</div>
                             scicovergen ref.png --mode image_repro
                         </div>
                     </div>

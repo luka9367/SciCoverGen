@@ -39,11 +39,9 @@ setup(
         "matplotlib>=3.5.0",
         "numpy>=1.20.0",
         "Pillow>=9.0.0",
+        "pdfplumber>=0.6.0",
     ],
     extras_require={
-        "pdf": [
-            "pdfplumber>=0.6.0",
-        ],
         "dev": [
             "pytest>=6.0",
             "black>=21.0",
