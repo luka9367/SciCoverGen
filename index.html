@@ -553,19 +553,23 @@
                     </p>
                     <div class="grid md:grid-cols-2 gap-4">
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
-                            <div class="text-xs text-slate-500 mb-2"># 论文概念配图（输入：本地 PDF / 文本 / MD）</div>
+                            <div class="text-xs text-slate-500 mb-2"># 论文概念配图</div>
+                            <div class="text-xs text-slate-500 mb-1">输入：本地 PDF / 文本 / MD &nbsp;|&nbsp; 输出：cover_image.png</div>
                             scicovergen paper.pdf --mode image --style conference_diagram
                         </div>
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
-                            <div class="text-xs text-slate-500 mb-2"># 精确矢量流程图（输入：本地 PDF / 文本）</div>
+                            <div class="text-xs text-slate-500 mb-2"># 精确矢量流程图</div>
+                            <div class="text-xs text-slate-500 mb-1">输入：本地 PDF / 文本 &nbsp;|&nbsp; 输出：diagram.png（300dpi 矢量）</div>
                             scicovergen paper.pdf --mode diagram
                         </div>
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
-                            <div class="text-xs text-slate-500 mb-2"># 实验数据图表（输入：JSON 数据文件）</div>
+                            <div class="text-xs text-slate-500 mb-2"># 实验数据图表</div>
+                            <div class="text-xs text-slate-500 mb-1">输入：JSON 数据文件 &nbsp;|&nbsp; 输出：plot.png（300dpi 顶会风格）</div>
                             scicovergen data.json --mode data_plot --plot-style bar_paired_delta
                         </div>
                         <div class="code-block rounded-lg p-4 text-sm text-slate-300 overflow-x-auto">
-                            <div class="text-xs text-slate-500 mb-2"># 图像风格复现（输入：本地 PNG / JPG 图片）</div>
+                            <div class="text-xs text-slate-500 mb-2"># 图像风格复现</div>
+                            <div class="text-xs text-slate-500 mb-1">输入：本地 PNG / JPG 图片 &nbsp;|&nbsp; 输出：reproduced.png（matplotlib 还原）</div>
                             scicovergen ref.png --mode image_repro
                         </div>
                     </div>
