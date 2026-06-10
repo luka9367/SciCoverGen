@@ -1,13 +1,7 @@
-# SciCoverGen 依赖
+# SciCoverGen 核心依赖
 # 安装命令: pip install -r requirements.txt
 
-# 网络请求
 requests>=2.25.0
 
-# PDF 解析（可选，用于读取论文PDF）
-pdfplumber>=0.6.0
-
-# 开发依赖（可选）
-# pytest>=6.0
-# black>=21.0
-# flake8>=3.9
+# PDF 解析为可选依赖，需要时请单独安装:
+# pip install pdfplumber
