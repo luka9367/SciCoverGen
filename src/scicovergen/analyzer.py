@@ -5,8 +5,9 @@
 使用 GLM-4-Flash 自动分析科研文档，提取关键信息用于封面生成。
 """
 
+import json
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from .api_client import ZhipuClient
 
@@ -153,6 +154,140 @@ class ContentAnalyzer:
 
         result = self.client.chat_completion([{"role": "user", "content": prompt}], max_tokens=2000)
         return self._parse_analysis(result)
+
+    def extract_architecture(self, content: str, title: str = "") -> Dict[str, Any]:
+        """
+        提取论文的算法架构信息，用于生成精确的技术流程图
+
+        Args:
+            content: 论文内容文本
+            title: 论文标题
+
+        Returns:
+            结构化架构数据字典，可直接传给 diagram_renderer
+        """
+        truncated = content[:3000]
+
+        prompt = f"""你是一位计算机科学论文可视化专家。请分析以下论文内容，提取算法的模块化架构信息，用于生成技术流程图。
+
+论文标题：{title}
+论文内容（前3000字符）：
+{truncated}
+
+请严格按照以下 JSON 格式输出（不要有任何额外文字，只输出 JSON）：
+
+{{
+    "title": "论文标题",
+    "layout": "horizontal_pipeline",
+    "stages": [
+        {{
+            "name": "Stage 1: Input",
+            "color": "light_blue",
+            "modules": [
+                {{"name": "Raw Data", "type": "input"}},
+                {{"name": "Similarity Graph", "type": "data"}}
+            ]
+        }},
+        {{
+            "name": "Stage 2: Processing",
+            "color": "light_green",
+            "modules": [
+                {{"name": "Graph Laplacian", "type": "processor"}},
+                {{"name": "Spectral Embedding", "type": "processor"}},
+                {{"name": "Min-Max Fusion", "type": "attention"}}
+            ]
+        }},
+        {{
+            "name": "Stage 3: Output",
+            "color": "light_coral",
+            "modules": [
+                {{"name": "K-Means", "type": "output"}},
+                {{"name": "Cluster Labels", "type": "output"}}
+            ]
+        }}
+    ],
+    "connections": [
+        {{"from": "Raw Data", "to": "Similarity Graph"}},
+        {{"from": "Similarity Graph", "to": "Graph Laplacian"}},
+        {{"from": "Graph Laplacian", "to": "Spectral Embedding"}},
+        {{"from": "Spectral Embedding", "to": "Min-Max Fusion"}},
+        {{"from": "Min-Max Fusion", "to": "K-Means"}},
+        {{"from": "K-Means", "to": "Cluster Labels"}}
+    ]
+}}
+
+规则：
+1. stages 数量 2-5 个，每个 stage 的 modules 数量 1-4 个
+2. module 的 type 必须从以下选择：input, data, encoder, processor, decoder, output, attention, training, loss, auxiliary
+3. stage 的 color 必须从以下选择：light_blue, light_green, light_yellow, light_coral, light_lavender, light_gray
+4. layout 必须是 "horizontal_pipeline"
+5. connections 必须正确连接所有 stage 之间的模块
+6. 模块名称要简洁（1-3个英文单词），适合放在流程图框内
+7. 只输出 JSON，不要任何解释、不要 markdown 代码块"""
+
+        try:
+            result = self.client.chat_completion(
+                [{"role": "user", "content": prompt}],
+                max_tokens=2000,
+                temperature=0.3
+            )
+            # 清理可能的 markdown 代码块
+            result = result.strip()
+            if result.startswith("```"):
+                result = result.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+            if result.startswith("json"):
+                result = result[4:].strip()
+
+            architecture = json.loads(result)
+            # 基础校验
+            if "stages" not in architecture or "connections" not in architecture:
+                raise ValueError("Missing required keys in architecture JSON")
+            return architecture
+
+        except Exception as e:
+            print(f"[!] 架构提取失败 ({e})，使用默认架构")
+            return self._default_architecture(title)
+
+    @staticmethod
+    def _default_architecture(title: str = "") -> Dict[str, Any]:
+        """默认架构（当 LLM 提取失败时使用）"""
+        return {
+            "title": title or "Algorithm Architecture",
+            "layout": "horizontal_pipeline",
+            "stages": [
+                {
+                    "name": "Input",
+                    "color": "light_blue",
+                    "modules": [
+                        {"name": "Raw Data", "type": "input"},
+                        {"name": "Preprocess", "type": "data"}
+                    ]
+                },
+                {
+                    "name": "Processing",
+                    "color": "light_green",
+                    "modules": [
+                        {"name": "Core Model", "type": "processor"},
+                        {"name": "Attention", "type": "attention"}
+                    ]
+                },
+                {
+                    "name": "Output",
+                    "color": "light_coral",
+                    "modules": [
+                        {"name": "Prediction", "type": "output"},
+                        {"name": "Result", "type": "output"}
+                    ]
+                }
+            ],
+            "connections": [
+                {"from": "Raw Data", "to": "Preprocess"},
+                {"from": "Preprocess", "to": "Core Model"},
+                {"from": "Core Model", "to": "Attention"},
+                {"from": "Attention", "to": "Prediction"},
+                {"from": "Prediction", "to": "Result"}
+            ]
+        }
 
     def _parse_analysis(self, text: str) -> Dict[str, str]:
         """解析分析结果"""

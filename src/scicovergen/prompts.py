@@ -8,6 +8,19 @@
 from typing import Dict
 
 
+# 顶会流程图专用 pastel 马卡龙配色 (提取自 NeurIPS/ICLR 优质配图)
+CONFERENCE_PASTEL_COLORS = {
+    "light_blue": "#D5DEFF",      # 输入/数据模块
+    "light_green": "#C8E5B3",     # 处理/核心模块
+    "light_yellow": "#E3F2D9",    # 训练/阶段
+    "light_coral": "#FFD4C7",     # 输出/结果
+    "light_lavender": "#E8D5FF",  # 注意力/机制
+    "light_gray": "#D4D4D4",      # 辅助组件
+    "white": "#FFFFFF",           # 背景
+    "deep_navy": "#2C3E50",       # 轮廓线/箭头
+    "soft_black": "#333333",      # 边框
+}
+
 # 学科视觉元素库
 FIELD_VISUALS = {
     "机器学习/聚类": [
@@ -275,6 +288,70 @@ IMPORTANT:
 """
         return prompt
 
+    @staticmethod
+    def build_conference_diagram_prompt(analysis: Dict[str, str]) -> str:
+        """构建顶会流程图风格 Prompt (NeurIPS/ICLR/CCF-A 专用)"""
+        title = analysis.get("title", "Research Paper")
+        core_method = analysis.get("core_method", "")
+        math_objects = analysis.get("math_objects", "")
+        core_operation = analysis.get("core_operation", "")
+        visual_metaphor = analysis.get("visual_metaphor", "")
+        field = analysis.get("field", "机器学习")
+
+        prompt = f"""A professional flat vector technical diagram for a computer science research paper titled "{title}".
+
+CORE CONCEPT: {core_method}
+KEY ELEMENTS: {math_objects}
+CORE OPERATION: {core_operation}
+VISUAL METAPHOR: {visual_metaphor}
+
+DESIGN SPECIFICATIONS:
+- Flat 2D vector illustration, absolutely no perspective, no 3D effects, no isometric
+- Clean line art with thin dark navy outlines (#2C3E50, 1-2px width)
+- Minimal to zero shading, absolutely no gradients, no glossy effects, matte finish
+- Rounded rectangles with thin dark borders for all modules and blocks
+- Clear left-to-right pipeline flow with thin directional arrows (#2C3E50)
+- Dashed bounding boxes grouping related modules into stages/phases
+- Small minimalist geometric icons inside modules (gear, stacked layers, brain, eye, graph nodes, matrix grid)
+- Grid-aligned, pixel-perfect mathematical precision in spacing
+
+COLOR PALETTE (Pastel Macaron - exact hex codes):
+- Background: pure white #FFFFFF
+- Input/Data modules: light blue #D5DEFF
+- Processing/Core modules: light green #C8E5B3
+- Training/Stage blocks: light yellow/cream #E3F2D9
+- Output/Result modules: light coral/peach #FFD4C7
+- Attention/Mechanism: light lavender #E8D5FF
+- Auxiliary components: light gray #D4D4D4
+- Outlines, arrows, borders: deep navy #2C3E50
+
+LAYOUT:
+- Three clear stages: Input (left) -> Processing (center) -> Output (right)
+- Generous white space (30-40%) between modules and stages
+- Mathematical precision in alignment and proportions
+- Clear visual hierarchy with stage containers and module blocks
+
+VISUAL ELEMENTS:
+- Rounded rectangle modules with thin dark outlines
+- Small circles/dots for nodes, states, data points
+- Thin directional arrows with arrowheads showing data flow
+- Dashed lines for feedback loops, skip connections, optional paths
+- Small flat geometric icons inside each module (no text, no letters)
+
+MOOD: Professional, academic, clean, highly organized, subtle contrast, clarity over decoration, conveying technical precision and mathematical rigor
+
+IMPORTANT:
+- NO text, NO words, NO letters, NO alphabet characters, NO numbers in the image
+- NO Chinese characters
+- NO realistic human faces, hands, or bodies
+- NO photorealistic elements, no photographs, no 3D renders
+- NO complex gradients, no drop shadows, no glossy effects, no glass morphism
+- NO watercolor, no brush strokes, no artistic distortion
+- NO decorative elements that don't convey technical meaning
+- Suitable for publication in NeurIPS, ICML, ICLR, CVPR, KDD, CCF-A venues
+"""
+        return prompt
+
 
 class LLMPromptBuilder:
     """
@@ -284,6 +361,73 @@ class LLMPromptBuilder:
     同时完整复用 baoyu-cover-image 的 5 维度设计体系作为上下文约束。
     """
 
+    # 顶会流程图专用 System Prompt (NeurIPS/ICLR/CCF-A 风格)
+    CONFERENCE_DIAGRAM_SYSTEM_PROMPT = """你是一位国际顶尖的计算机科学论文配图设计师，专精于为 NeurIPS、ICML、ICLR、CVPR、KDD 等 CCF-A 类顶会设计技术流程图和概念示意图。
+
+## 核心风格规范：顶会流程图风格 (NeurIPS/ICLR/CCF-A Style)
+你必须生成用于 AI 图像生成模型（Cogview、DALL-E、Stable Diffusion）的英文提示词，风格必须是：
+
+**1. 渲染风格 (Rendering)**
+- Flat vector illustration, clean 2D technical diagram
+- 2D flat, absolutely no perspective, no 3D effects, no isometric
+- Clean line art with thin dark outlines (1-2px width)
+- Minimal to zero shading, absolutely no gradients, no glossy effects
+- Rounded corners on all rectangular elements
+- Pixel-perfect alignment, grid-based layout
+
+**2. 配色方案 (Palette - Pastel/Macaron)**
+主色调必须使用以下精确的 pastel 马卡龙色系：
+- Light blue #D5DEFF (soft sky blue, for input/data modules)
+- Light green #C8E5B3 (soft mint, for processing/core modules)
+- Light yellow/cream #E3F2D9 (warm beige, for training stages)
+- Light coral/peach #FFD4C7 (soft salmon, for output/results)
+- Light lavender #E8D5FF (soft purple, for attention/mechanism)
+- Light gray #D4D4D4 (neutral, for auxiliary components)
+- Pure white #FFFFFF (background)
+辅助深色（仅用于细线、箭头、边框）：
+- Deep navy #2C3E50 (for outlines and arrows)
+- Soft black #333333 (for subtle borders)
+
+**3. 构图与布局 (Composition)**
+- Modular block diagram with clear horizontal pipeline flow (left-to-right) or vertical hierarchy (top-to-bottom)
+- Clear directional arrows (thin, dark, with arrowheads) showing data flow between modules
+- Dashed bounding boxes or colored background blocks for grouping related modules into stages/phases
+- Visual hierarchy: large stage containers containing smaller module blocks
+- Generous white space (30-40%) between modules
+- Grid-aligned, mathematical precision in alignment
+- Clear separation of input, processing, and output stages
+
+**4. 视觉元素 (Visual Elements)**
+- Rounded rectangles (modules/blocks) with thin dark outlines (#2C3E50)
+- Small circles or dots (nodes, states, data points, decision points)
+- Thin directional arrows (#2C3E50, 1-2px) with clear arrowheads
+- Dashed lines for optional paths, feedback loops, skip connections
+- Small minimalist geometric icons inside modules (gear for processing, stacked layers for neural networks, eye for vision, speech bubble for NLP, graph nodes for GNN, matrix grid for linear algebra)
+- NO text labels, NO words, NO letters, NO numbers inside the image
+
+**5. 情绪与氛围 (Mood)**
+- Professional, academic, clean, highly organized
+- Subtle contrast, not aggressive
+- Clarity and information density over decoration
+- Conveys technical precision and mathematical rigor
+- Suitable for publication in top-tier venues
+
+## 绝对禁止
+- NO text, NO words, NO letters, NO alphabet characters, NO numbers in the image
+- NO Chinese characters
+- NO realistic human faces, hands, or bodies
+- NO photorealistic elements, no photographs, no 3D renders
+- NO complex gradients, no drop shadows, no glossy effects, no glass morphism
+- NO decorative elements that don't convey technical meaning
+- NO watercolor, no brush strokes, no artistic distortion
+
+## 输出要求
+- 使用英文撰写
+- 250-400 词
+- 必须包含：主体描述（模块、数据流、架构层次）、风格描述（flat vector pastel technical diagram）、色彩描述（精确 pastel hex codes）、构图描述（pipeline layout with arrows）、光影描述（flat, no shadows）
+- 直接输出提示词，不要任何解释、不要 markdown、不要分点"""
+
+    # 通用艺术风格 System Prompt
     SYSTEM_PROMPT = """你是一位国际顶尖的科研可视化提示词工程师，专精于将学术内容转化为用于 AI 图像生成模型（Cogview、DALL-E、Stable Diffusion）的高质量英文提示词。
 
 ## 5 维度设计体系
@@ -355,7 +499,7 @@ class LLMPromptBuilder:
 - 直接输出提示词，不要任何解释、不要 markdown 格式、不要分点说明"""
 
     @staticmethod
-    def build_prompt(analysis: Dict[str, str], scene: str, client) -> str:
+    def build_prompt(analysis: Dict[str, str], scene: str, client, style: str = "artistic") -> str:
         """
         调用 LLM 生成高质量 prompt
 
@@ -363,14 +507,21 @@ class LLMPromptBuilder:
             analysis: 内容分析结果字典
             scene: 场景类型 (paper_cover/project_report/academic_poster)
             client: ZhipuClient 实例
+            style: 风格类型 ("artistic" | "conference_diagram")
 
         Returns:
             生成的 prompt 字符串
         """
-        user_prompt = LLMPromptBuilder._build_user_prompt(analysis, scene)
+        # 选择 system prompt
+        if style == "conference_diagram":
+            system_prompt = LLMPromptBuilder.CONFERENCE_DIAGRAM_SYSTEM_PROMPT
+        else:
+            system_prompt = LLMPromptBuilder.SYSTEM_PROMPT
+
+        user_prompt = LLMPromptBuilder._build_user_prompt(analysis, scene, style)
 
         messages = [
-            {"role": "system", "content": LLMPromptBuilder.SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
 
@@ -387,11 +538,11 @@ class LLMPromptBuilder:
                 result = result.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
             return result
         except Exception as e:
-            print(f"⚠️  LLM Prompt 生成失败，回退到静态模板: {e}")
-            return LLMPromptBuilder._static_build(analysis, scene)
+            print(f"[!] LLM Prompt 生成失败，回退到静态模板: {e}")
+            return LLMPromptBuilder._static_build(analysis, scene, style)
 
     @staticmethod
-    def _build_user_prompt(analysis: Dict[str, str], scene: str) -> str:
+    def _build_user_prompt(analysis: Dict[str, str], scene: str, style: str = "artistic") -> str:
         """构建发送给 LLM 的 user prompt"""
         scene_names = {
             "paper_cover": "学术论文封面",
@@ -420,7 +571,28 @@ class LLMPromptBuilder:
 
         content_section = "\n".join(content_blocks) if content_blocks else "- 标题: 科研论文"
 
-        # 构建维度建议块
+        # Conference diagram 专用 user prompt
+        if style == "conference_diagram":
+            return f"""请为以下计算机科学论文生成一个专业的技术流程图提示词（英文）。
+
+## 场景类型
+学术论文技术流程图 / 算法架构图 (NeurIPS/ICLR/CCF-A 风格)
+
+## 内容分析
+{content_section}
+
+## 任务要求
+1. 生成一个 250-400 词的英文图像生成提示词
+2. 风格必须是：Flat vector technical diagram, 2D, no perspective, pastel macaron color palette
+3. 必须包含模块化的 rounded rectangles、thin directional arrows、small geometric icons
+4. 配色必须使用 pastel 色系：#D5DEFF, #C8E5B3, #E3F2D9, #FFD4C7, #E8D5FF, #D4D4D4, white background, dark outlines #2C3E50
+5. 构图必须是清晰的 left-to-right pipeline 或 top-to-bottom hierarchy
+6. 必须展示数据流、模块连接、处理阶段（Input -> Processing -> Output）
+7. 模块内部使用小几何图标代替文字（gear, layers, nodes, matrix, brain, eye）
+8. 图中绝对不能有任何文字、字母、数字
+9. 直接输出提示词，不要任何解释、不要 markdown、不要分点。"""
+
+        # 构建维度建议块 (artistic 风格)
         dims = []
         if "palette" in analysis:
             dims.append(f"- 建议配色: {analysis['palette']}")
@@ -452,8 +624,10 @@ class LLMPromptBuilder:
 直接输出提示词，不要任何解释。"""
 
     @staticmethod
-    def _static_build(analysis: Dict[str, str], scene: str) -> str:
+    def _static_build(analysis: Dict[str, str], scene: str, style: str = "artistic") -> str:
         """静态模板 fallback"""
+        if style == "conference_diagram":
+            return PromptBuilder.build_conference_diagram_prompt(analysis)
         if scene == "paper_cover":
             return PromptBuilder.build_paper_cover_prompt(analysis)
         elif scene == "project_report":

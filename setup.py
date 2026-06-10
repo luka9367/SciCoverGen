@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="scicovergen",
-    version="1.0.0",
+    version="1.3.0",
     author="SciCoverGen Team",
     author_email="scicovergen@example.com",
     description="面向科研新手的论文封面、课题报告、学术海报一键图像生成工具",
@@ -36,6 +36,9 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "requests>=2.25.0",
+        "matplotlib>=3.5.0",
+        "numpy>=1.20.0",
+        "Pillow>=9.0.0",
     ],
     extras_require={
         "pdf": [

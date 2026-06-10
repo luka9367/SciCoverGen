@@ -2,7 +2,7 @@
 
 # SciCoverGen
 
-**面向科研新手的论文封面、课题报告、学术海报一键图像生成工具**
+**面向 CS & AI 科研工作者的图像生成与复现引擎**
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -18,18 +18,21 @@
 
 ### 简介
 
-SciCoverGen 是一款专为科研新手打造的封面自动生成工具。只需提供论文/报告/海报的文本内容，即可一键生成专业、美观、符合学术规范的封面图像。
+SciCoverGen 是一款专为 **CS & AI 方向学生与科研工作者** 打造的一站式图像生成与复现工具。从论文概念配图、算法流程图到实验数据图表、图像风格复现，四大生成模式全覆盖，全部基于国内免费大模型能力，零成本产出可直接用于 CCF-A 顶级论文的高质量图像。
 
-本项目基于 [baoyu-cover-image](https://github.com/macrochen/baoyu-cover-image) skill 深度魔改，**彻底移除所有境外图像模型依赖**，全面对接**智谱开放平台免费图像生成接口 Cogview-3-Flash**。新用户注册即可免费领取 API Key 开始使用，**全程杜绝数据出境风险**。
+本项目深度参考了上海交通大学、中国科学院大学、香港中文大学（深圳）、上海 AI Lab、香港科技大学（广州）等顶尖学府与研究机构的先进经验，将学术界视觉规范工程化，致力于打造开源国内免费模型赛道内实力顶尖的科研图像生成工具。
 
 ### 核心特性
 
-- **一键生成**：5 分钟上手，一行代码生成专业封面
-- **三大场景**：内置论文封面、课题报告、学术海报专属优化
-- **智能分析**：GLM-4-Flash 自动分析内容，精准提取视觉元素
-- **国产化**：纯国产 API，数据不出境，安全可靠
-- **免费使用**：对接 Cogview-3-Flash 免费模型，零成本科研辅助
-- **多格式支持**：支持 Markdown、TXT、**PDF 论文**等多种输入格式
+- **四大生成模式**：
+  - `image` — 文生图（Cogview-3-Flash），LLM 动态生成 Prompt，支持顶会风格概念配图
+  - `diagram` — 代码精确绘图（Matplotlib），生成带可读文字的 300dpi 矢量流程图
+  - `data_plot` — 数据转绘图（8 种顶会预建风格），JSON 数据一键生成 publication-quality 图表
+  - `image_repro` — 图像复现（plot-from-image），上传参考图自动分析并 matplotlib 还原
+- **顶会视觉规范**：配色、字体、spine、网格全部按 NeurIPS / ICML / ICLR 标准调优
+- **国产免费链路**：对接智谱 Cogview-3-Flash 与 GLM-4-Flash，数据不出境，零费用
+- **多格式输入**：支持 Markdown、TXT、PDF 论文、JSON 数据、参考图像
+- **Python API + CLI 双接口**：一行代码或一条命令即可生成
 
 ### 快速开始
 
@@ -47,82 +50,74 @@ pip install scicovergen
 2. 注册账号（**新用户免费领取额度**）
 3. 创建 API Key
 
-#### 3. 生成你的第一个封面
+#### 3. 生成图像
 
-**方式一：Python 代码**
-
-```python
-import os
-from scicovergen import SciCoverGen
-
-# 设置 API Key
-os.environ["ZHIPU_API_KEY"] = "your-api-key"
-
-# 创建生成器
-gen = SciCoverGen()
-
-# 生成论文封面（支持 .md / .txt / .pdf）
-gen.generate("your_paper.pdf", scene="paper_cover")
-```
-
-**方式二：命令行**
+**命令行（CLI）**
 
 ```bash
-# 设置环境变量
 export ZHIPU_API_KEY=your-api-key
 
-# 生成论文封面
-scicovergen paper.md --scene paper_cover
+# 模式 1: 文生图 — 论文概念配图
+scicovergen paper.md --mode image --style conference_diagram
 
-# 直接传 PDF 论文生成封面
-scicovergen "论文.pdf" --scene paper_cover
+# 模式 2: 代码精确绘图 — 算法流程图
+scicovergen paper.md --mode diagram
 
-# 生成课题报告封面
-scicovergen report.md --scene project_report
+# 模式 3: 数据转绘图 — 实验图表
+scicovergen data.json --mode data_plot --plot-style bar_paired_delta
 
-# 生成学术海报
-scicovergen poster.md --scene academic_poster
+# 模式 4: 图像复现 — 还原参考配图风格
+scicovergen reference.png --mode image_repro
 ```
 
-### PDF 论文生成封面（最常用）
+**Python API**
 
-**SciCoverGen 可以直接读取 PDF 论文并生成封面**，无需手动复制粘贴：
+```python
+from scicovergen import SciCoverGen
 
-```bash
-# 安装 PDF 支持
-pip install pdfplumber
+# 统一入口
+gen = SciCoverGen(api_key="your-api-key")
 
-# 一行命令生成封面
-scicovergen "你的论文.pdf" --scene paper_cover -o ./covers
+# 文生图
+gen.generate("paper.md", mode="image", style="conference_diagram")
+
+# 精确流程图
+gen.generate("paper.md", mode="diagram")
+
+# 数据绘图（传入数据字典）
+data = {
+    "title": "Accuracy Comparison",
+    "groups": ["A", "B", "C"],
+    "baseline": [50, 60, 55],
+    "method": [70, 75, 80],
+    "delta": ["+20", "+15", "+25"],
+    "ylabel": "Accuracy (%)"
+}
+gen.generate(data, mode="data_plot", style="bar_paired_delta")
+
+# 图像复现
+gen.generate("reference.png", mode="image_repro")
 ```
 
-**输出结果：**
-```
-covers/
-├── 论文标题_prompt.txt          # 自动生成的图像 Prompt
-└── 论文标题_cover_20260610.png  # 封面图像
-```
+### 四大生成模式详解
 
-**完整流程：**
-```
-PDF 论文文件
-    ↓ 自动提取文本（pdfplumber）
-    ↓ GLM-4-Flash 智能分析（标题、方法、学科领域...）
-    ↓ 自动选择配色/风格/视觉元素
-    ↓ 生成优化后的英文 Prompt
-    ↓ Cogview-3-Flash 生成封面图像
-    ↓ 保存到本地
-```
+| 模式 | 命令 | 说明 | 输出特点 |
+|------|------|------|----------|
+| **文生图** | `--mode image` | Cogview-3-Flash 生成概念配图 | 创意丰富，适合封面/海报 |
+| **精确流程图** | `--mode diagram` | Matplotlib 渲染算法架构图 | 文字清晰，300dpi，直接投稿 |
+| **数据转绘图** | `--mode data_plot` | 8 种顶会风格图表 | 配色规范，数据驱动 |
+| **图像复现** | `--mode image_repro` | 分析参考图并 matplotlib 还原 | 风格迁移，可编辑复现 |
 
-> **注意**：PDF 需为文本型（非扫描版图片），否则无法提取文字内容。
+### 8 种顶会预建图表风格
 
-### 三大科研场景
-
-| 场景 | 命令 | 特点 |
-|------|------|------|
-| **论文封面** | `--scene paper_cover` | 学术专业风格，数学可视化元素，冷色调 |
-| **课题报告** | `--scene project_report` | 简洁结构化，数据图表元素，商务风格 |
-| **学术海报** | `--scene academic_poster` | 视觉冲击力强，信息丰富，适合大幅展示 |
+- `bar_paired_delta` — 配对对比柱 + 增益箭头
+- `bar_grouped_hatch` — 多方法分组柱 + 斜线填充
+- `line_confidence_band` — 折线 + 半透明置信区间阴影
+- `line_training_curve` — 训练曲线 + 垂直断点线
+- `line_loss_with_inset` — L 形 spine + 局部放大 inset
+- `scatter_tsne_cluster` — t-SNE 聚类 + 注释框
+- `scatter_broken_axis` — 折断 X 轴 + 多 marker 系列
+- `radar_dual_series` — 双方法雷达对比 + 正八边形网格
 
 ### 项目结构
 
@@ -131,11 +126,15 @@ SciCoverGen/
 ├── src/scicovergen/          # 核心源码
 │   ├── __init__.py
 │   ├── api_client.py         # 智谱 API 客户端
-│   ├── analyzer.py           # 内容智能分析器
-│   ├── prompts.py            # 场景化 Prompt 生成器
-│   ├── generator.py          # 主生成器
+│   ├── analyzer.py           # 内容智能分析器 + 架构提取
+│   ├── prompts.py            # 场景化 Prompt 生成器（LLM 增强）
+│   ├── generator.py          # 主生成器（支持 4 种模式）
+│   ├── diagram_renderer.py   # Matplotlib 矢量流程图渲染器
+│   ├── plot_generator.py     # 数据转绘图引擎（8 种风格）
+│   ├── plot_reproducer.py    # 图像复现引擎（plot-from-image）
+│   ├── plot_styles.py        # 顶会图表风格配置库
 │   ├── config.py             # 配置管理
-│   ├── cli.py                # 命令行接口
+│   ├── cli.py                # 命令行接口（支持 4 种模式）
 │   └── utils.py              # 工具函数
 ├── examples/                  # 示例代码
 │   ├── paper_cover/
@@ -143,11 +142,11 @@ SciCoverGen/
 │   └── academic_poster/
 ├── tests/                     # 单元测试
 ├── docs/                      # 文档
+│   ├── index.html             # 项目宣传页
 │   ├── getting_started.md
 │   └── api_reference.md
 ├── .github/workflows/         # CI/CD
 ├── setup.py
-├── pyproject.toml
 ├── requirements.txt
 ├── LICENSE
 └── README.md
@@ -156,31 +155,29 @@ SciCoverGen/
 ### 技术架构
 
 ```
-用户输入 (论文/报告/海报)
+用户输入 (论文/报告/海报/数据/图像)
     ↓
-内容读取 (支持 MD/TXT/PDF)
+内容读取 (支持 MD/TXT/PDF/JSON/PNG)
     ↓
-GLM-4-Flash 智能分析
+模式路由 (image / diagram / data_plot / image_repro)
     ↓
-场景化 Prompt 构建
-    ↓
-Cogview-3-Flash 图像生成
-    ↓
-封面图像输出
+├─ image:   GLM-4-Flash 分析 → Prompt 构建 → Cogview-3-Flash 生图
+├─ diagram: GLM-4-Flash 架构提取 → Matplotlib 精确渲染 → 300dpi PNG
+├─ data_plot: 数据验证 → 风格匹配 → PlotGenerator 渲染 → 300dpi PNG
+└─ image_repro: PIL 图像分析 → 风格匹配/LLM 代码生成 → Matplotlib 复现
 ```
 
-### 与 baoyu-cover-image 的改进对比
+### 学术背景
 
-| 特性 | baoyu-cover-image | SciCoverGen |
-|------|-------------------|-------------|
-| 目标用户 | 通用文章作者 | **科研新手** |
-| 图像模型 | Gemini/Claude/DALL-E 等境外模型 | **智谱 Cogview-3-Flash（国产免费）** |
-| 数据安全 | 数据出境 | **纯国产链路，数据不出境** |
-| 科研场景 | 无 | **论文/报告/海报三大专属场景** |
-| PDF 支持 | 无 | **直接读取 PDF 生成封面** |
-| 中文支持 | 一般 | **深度优化，适合中文学术内容** |
-| 视觉精度 | 通用 | **学科特定视觉元素库** |
-| 使用成本 | 需付费 | **完全免费** |
+本项目深度参考以下顶尖学府与研究机构的先进经验：
+
+- **上海交通大学** (SJTU)
+- **中国科学院大学** (UCAS)
+- **香港中文大学（深圳）** (CUHK-Shenzhen)
+- **上海人工智能实验室** (Shanghai AI Lab)
+- **香港科技大学（广州）** (HKUST(GZ))
+
+我们将学术界在 NeurIPS、ICML、ICLR 等顶会中沉淀的视觉设计方法论融入工程实践，从配色体系、字体规范到布局美学，全部按投稿标准调优。
 
 ### 贡献
 
@@ -196,75 +193,43 @@ Cogview-3-Flash 图像生成
 
 ### Introduction
 
-SciCoverGen is an automated cover image generator designed for research beginners. Simply provide your paper/report/poster text content, and generate professional, beautiful, academically-standard cover images with one click.
+SciCoverGen is an all-in-one image generation and reproduction engine designed for **CS & AI researchers and students**. Covering four generation modes — concept images, algorithm diagrams, data plots, and image reproduction — it leverages domestic free large-model capabilities to produce publication-ready visuals at zero cost.
 
-This project is deeply adapted from the [baoyu-cover-image](https://github.com/macrochen/baoyu-cover-image) skill, **completely removing all foreign image model dependencies**, and fully integrating with the **Zhipu AI Platform's free image generation API Cogview-3-Flash**. New users can register and receive a free API Key to start immediately, **ensuring zero data export risk**.
+The project draws on advanced expertise from top institutions including Shanghai Jiao Tong University, University of Chinese Academy of Sciences, CUHK-Shenzhen, Shanghai AI Lab, and HKUST(Guangzhou), engineering academic visual standards into an accessible open-source tool.
 
 ### Key Features
 
-- **One-click generation**: Get started in 5 minutes, generate professional covers with one line of code
-- **Three scenarios**: Built-in optimization for paper covers, project reports, and academic posters
-- **Smart analysis**: GLM-4-Flash automatically analyzes content and extracts precise visual elements
-- **Domestic AI**: Pure domestic API, data stays local, safe and reliable
-- **Free to use**: Integrated with Cogview-3-Flash free model, zero-cost research assistance
-- **Multi-format support**: Supports Markdown, TXT, **PDF papers**, and more input formats
+- **Four Generation Modes**:
+  - `image` — Text-to-image via Cogview-3-Flash with LLM-enhanced prompts
+  - `diagram` — Matplotlib code-generated vector diagrams at 300dpi
+  - `data_plot` — 8 pre-built conference chart styles from JSON data
+  - `image_repro` — Upload a reference figure, analyze and reproduce with matplotlib
+- **Conference-Grade Visuals**: Colors, fonts, spines, and grids tuned to NeurIPS / ICML / ICLR standards
+- **Free Domestic Pipeline**: Zhipu AI Cogview-3-Flash & GLM-4-Flash, zero data export
+- **Multi-format Input**: Markdown, TXT, PDF papers, JSON data, reference images
+- **Python API + CLI**: One line of code or one command to generate
 
 ### Quick Start
-
-#### 1. Install
 
 ```bash
 pip install scicovergen
 ```
 
-> PDF support requires additional install (optional): `pip install pdfplumber`
-
-#### 2. Get Free API Key
-
-1. Visit [Zhipu AI Open Platform](https://open.bigmodel.cn/)
-2. Register (**new users get free credits**)
-3. Create an API Key
-
-#### 3. Generate Your First Cover
-
-**Python:**
-
-```python
-import os
-from scicovergen import SciCoverGen
-
-os.environ["ZHIPU_API_KEY"] = "your-api-key"
-
-gen = SciCoverGen()
-gen.generate("your_paper.pdf", scene="paper_cover")
-```
-
-**CLI:**
-
 ```bash
 export ZHIPU_API_KEY=your-api-key
-scicovergen paper.md --scene paper_cover
-scicovergen "paper.pdf" --scene paper_cover
+
+# Mode 1: Text-to-image
+scicovergen paper.md --mode image --style conference_diagram
+
+# Mode 2: Precise vector diagram
+scicovergen paper.md --mode diagram
+
+# Mode 3: Data to plot
+scicovergen data.json --mode data_plot --plot-style bar_paired_delta
+
+# Mode 4: Image reproduction
+scicovergen reference.png --mode image_repro
 ```
-
-### PDF Paper Cover Generation
-
-**SciCoverGen can directly read PDF papers and generate covers** without manual copy-paste:
-
-```bash
-pip install pdfplumber
-scicovergen "your_paper.pdf" --scene paper_cover -o ./covers
-```
-
-> **Note**: PDF must be text-based (not scanned images) to extract text content.
-
-### Three Research Scenarios
-
-| Scenario | Command | Characteristics |
-|----------|---------|-----------------|
-| **Paper Cover** | `--scene paper_cover` | Academic professional style, math visualization, cool tones |
-| **Project Report** | `--scene project_report` | Clean structured, data chart elements, business style |
-| **Academic Poster** | `--scene academic_poster` | Strong visual impact, information-rich, large-format ready |
 
 ### Contributing
 
