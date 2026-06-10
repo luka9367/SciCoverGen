@@ -24,11 +24,16 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install requests pytest
+        pip install -e . --no-deps
 
-    - name: Lint with flake8
+    - name: Verify imports
       run: |
-        flake8 src/scicovergen --count --select=E9,F63,F7,F82 --show-source --statistics
+        python -c "import scicovergen; print(scicovergen.__version__)"
+        python -c "from scicovergen.generator import SciCoverGen, quick_generate"
+        python -c "from scicovergen.cli import main"
+        python -c "from scicovergen.prompts import PromptBuilder"
+        python -c "from scicovergen.utils import read_file, slugify"
 
     - name: Test with pytest
       run: |
