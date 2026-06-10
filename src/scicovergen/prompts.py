@@ -194,6 +194,7 @@ IMPORTANT:
 """
         return prompt
 
+
     @staticmethod
     def build_project_report_prompt(analysis: Dict[str, str]) -> str:
         """构建课题报告封面 Prompt"""
@@ -273,3 +274,191 @@ IMPORTANT:
 - Bold, dynamic, information-rich visual design
 """
         return prompt
+
+
+class LLMPromptBuilder:
+    """
+    基于 LLM 的动态 Prompt 生成器
+
+    调用 GLM-4-Flash 根据内容分析结果生成高质量图像提示词，
+    同时完整复用 baoyu-cover-image 的 5 维度设计体系作为上下文约束。
+    """
+
+    SYSTEM_PROMPT = """你是一位国际顶尖的科研可视化提示词工程师，专精于将学术内容转化为用于 AI 图像生成模型（Cogview、DALL-E、Stable Diffusion）的高质量英文提示词。
+
+## 5 维度设计体系
+你必须在生成提示词时，潜意识中遵循以下 5 维度体系来组织视觉语言：
+
+**1. Type（构图类型）**
+- hero: 大视觉冲击力，标题叠加，适合产品发布、重大公告
+- conceptual: 概念可视化，抽象核心思想，适合技术论文、方法论
+- typography: 文字为主，标题突出，适合观点文章、引言
+- metaphor: 视觉隐喻，具象表达抽象，适合哲学、成长、个人发展
+- scene: 场景氛围，叙事感，适合故事、旅行、生活方式
+- minimal: 极简构图，大量留白，适合禅意、专注、核心概念
+
+**2. Palette（调色板）**
+- warm: 友好亲和，橙、金黄、赤陶
+- elegant: 精致优雅，柔和珊瑚、灰青、玫瑰粉
+- cool: 科技专业，工程蓝、海军蓝、青色
+- dark: 深色高级，电光紫、青色、品红
+- earth: 自然有机，森林绿、鼠尾草、土棕
+- vivid: 鲜艳活力，亮红、荧光绿、电光蓝
+- pastel: 柔和梦幻，柔粉、薄荷、薰衣草
+- mono: 黑白极简，黑、近黑、白
+- retro: 复古怀旧，暗橙、灰粉、栗色
+
+**3. Rendering（渲染风格）**
+- flat-vector: 扁平矢量，统一轮廓，平涂填充，几何图标
+- hand-drawn: 手绘草图，不完美笔触，纸纹质感，涂鸦
+- painterly: 水彩/油画，笔触痕迹，颜色晕染，柔和边缘
+- digital: 数字插画，精确边缘，微妙渐变，UI组件
+- pixel: 像素艺术，像素网格，抖动，块状造型
+- chalk: 粉笔黑板，粉笔笔触，粉尘效果，板面纹理
+
+**4. Text（文本密度）**
+- none: 纯视觉，无文字
+- title-only: 仅标题
+- title-subtitle: 标题+副标题
+- text-rich: 信息密集
+
+**5. Mood（情绪强度）**
+- subtle: 低对比、柔和、轻量、平静
+- balanced: 中等对比、正常饱和度、平衡
+- bold: 高对比、鲜艳饱和、重量感、动态能量
+
+## 兼容性规则（必须遵守）
+- Palette×Rendering: cool配painterly不推荐；elegant配pixel/chalk不推荐；earth配pixel/chalk不推荐；pastel配pixel/chalk不推荐；mono配painterly不推荐；retro配chalk不推荐
+- Type×Rendering: scene配flat-vector不推荐；metaphor配pixel不推荐；minimal配pixel/chalk不推荐
+- Type×Text: typography不能配none；metaphor/scene/minimal不能配text-rich
+- Type×Mood: minimal不能配bold
+
+## 核心设计原则
+1. 视觉隐喻优于字面描述：用抽象、诗意的视觉语言表达科学概念
+2. 必须包含具体的学科视觉元素（数学对象、数据结构、算法流程、网络拓扑等）
+3. 配色必须体现学科特性和情绪氛围
+4. 构图必须有明确的视觉锚点和 40-60% 的呼吸空间（留白）
+5. 必须考虑在小尺寸预览下的可读性
+6. 使用专业摄影/艺术术语增强画面感（如 bokeh, depth of field, chiaroscuro, gradient mesh, volumetric lighting）
+
+## 绝对禁止
+- NO text, NO words, NO letters, NO alphabet characters in the image
+- NO Chinese characters
+- NO realistic human faces or human bodies
+- 禁止空洞的泛泛描述（如"一张漂亮的图"、"高质量图像"）
+
+## 输出要求
+- 使用英文撰写
+- 200-400 词
+- 必须包含：主体描述（Subject）、风格描述（Style）、色彩描述（Color）、光影描述（Lighting）、构图描述（Composition）
+- 必须有创意，使用隐喻、类比、视觉叙事
+- 直接输出提示词，不要任何解释、不要 markdown 格式、不要分点说明"""
+
+    @staticmethod
+    def build_prompt(analysis: Dict[str, str], scene: str, client) -> str:
+        """
+        调用 LLM 生成高质量 prompt
+
+        Args:
+            analysis: 内容分析结果字典
+            scene: 场景类型 (paper_cover/project_report/academic_poster)
+            client: ZhipuClient 实例
+
+        Returns:
+            生成的 prompt 字符串
+        """
+        user_prompt = LLMPromptBuilder._build_user_prompt(analysis, scene)
+
+        messages = [
+            {"role": "system", "content": LLMPromptBuilder.SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        try:
+            result = client.chat_completion(
+                messages=messages,
+                model="glm-4-flash",
+                temperature=0.8,
+                max_tokens=1500,
+            )
+            # 清理可能的 markdown 代码块
+            result = result.strip()
+            if result.startswith("```"):
+                result = result.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+            return result
+        except Exception as e:
+            print(f"⚠️  LLM Prompt 生成失败，回退到静态模板: {e}")
+            return LLMPromptBuilder._static_build(analysis, scene)
+
+    @staticmethod
+    def _build_user_prompt(analysis: Dict[str, str], scene: str) -> str:
+        """构建发送给 LLM 的 user prompt"""
+        scene_names = {
+            "paper_cover": "学术论文封面",
+            "project_report": "课题报告封面",
+            "academic_poster": "学术会议海报",
+        }
+        scene_name = scene_names.get(scene, "科研封面")
+
+        # 构建内容描述块
+        content_blocks = []
+        for key, label in [
+            ("title", "标题"),
+            ("core_method", "核心方法"),
+            ("math_objects", "关键数学对象"),
+            ("core_operation", "核心操作"),
+            ("visual_metaphor", "视觉隐喻"),
+            ("field", "学科领域"),
+            ("project_type", "项目类型"),
+            ("keywords", "关键词"),
+            ("visual_elements", "视觉元素建议"),
+            ("highlights", "研究亮点"),
+            ("visual_focus", "视觉焦点"),
+        ]:
+            if key in analysis and analysis[key]:
+                content_blocks.append(f"- {label}: {analysis[key]}")
+
+        content_section = "\n".join(content_blocks) if content_blocks else "- 标题: 科研论文"
+
+        # 构建维度建议块
+        dims = []
+        if "palette" in analysis:
+            dims.append(f"- 建议配色: {analysis['palette']}")
+        if "style" in analysis:
+            dims.append(f"- 建议风格: {analysis['style']}")
+        if "mood" in analysis:
+            dims.append(f"- 建议情绪: {analysis['mood']}")
+        dim_section = "\n".join(dims) if dims else "- 无具体建议，请自行推断"
+
+        return f"""请为以下科研内容生成一个专业的图像生成提示词（英文）。
+
+## 场景类型
+{scene_name}
+
+## 内容分析
+{content_section}
+
+## 维度建议
+{dim_section}
+
+## 任务要求
+1. 根据内容自动推断最合适的 5 维度配置（Type, Palette, Rendering, Text, Mood）
+2. 应用兼容性规则，确保维度组合合理（不合理的组合要调整）
+3. 生成一个 200-400 词的英文图像生成提示词
+4. 提示词必须具体、专业、有创意，避免泛泛而谈
+5. 必须使用视觉隐喻，包含具体的数学/科学元素
+6. 必须在提示词末尾包含 "NO text, NO words, NO letters, NO alphabet characters, NO Chinese characters, NO realistic human faces"
+
+直接输出提示词，不要任何解释。"""
+
+    @staticmethod
+    def _static_build(analysis: Dict[str, str], scene: str) -> str:
+        """静态模板 fallback"""
+        if scene == "paper_cover":
+            return PromptBuilder.build_paper_cover_prompt(analysis)
+        elif scene == "project_report":
+            return PromptBuilder.build_project_report_prompt(analysis)
+        elif scene == "academic_poster":
+            return PromptBuilder.build_academic_poster_prompt(analysis)
+        else:
+            return PromptBuilder.build_paper_cover_prompt(analysis)

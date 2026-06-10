@@ -11,7 +11,7 @@ from typing import Optional
 from .analyzer import ContentAnalyzer
 from .api_client import ZhipuClient
 from .config import Config
-from .prompts import PromptBuilder
+from .prompts import LLMPromptBuilder, PromptBuilder
 from .utils import (
     ensure_dir,
     get_output_path,
@@ -170,15 +170,9 @@ class SciCoverGen:
             return source
 
     def _build_prompt(self, analysis: dict, scene: str) -> str:
-        """根据场景构建 Prompt"""
-        if scene == "paper_cover":
-            return PromptBuilder.build_paper_cover_prompt(analysis)
-        elif scene == "project_report":
-            return PromptBuilder.build_project_report_prompt(analysis)
-        elif scene == "academic_poster":
-            return PromptBuilder.build_academic_poster_prompt(analysis)
-        else:
-            return PromptBuilder.build_paper_cover_prompt(analysis)
+        """根据场景构建 Prompt，优先使用 LLM 动态生成"""
+        print("   🧠 调用 GLM-4-Flash 生成高质量 Prompt...")
+        return LLMPromptBuilder.build_prompt(analysis, scene, self.client)
 
 
 def quick_generate(
