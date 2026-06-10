@@ -12,7 +12,7 @@ setup(
     version="1.3.0",
     author="SciCoverGen Team",
     author_email="scicovergen@example.com",
-    description="面向科研新手的论文封面、课题报告、学术海报一键图像生成工具",
+    description="融合国内免费大模型能力，参考顶级学府研究经验，为 CS & AI 科研工作者提供一站式图片复现与生图解决方案",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/luka9367/SciCoverGen",
