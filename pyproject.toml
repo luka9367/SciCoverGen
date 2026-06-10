@@ -1,61 +1,6 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[project]
-name = "scicovergen"
-version = "1.0.0"
-description = "面向科研新手的论文封面、课题报告、学术海报一键图像生成工具"
-readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.8"
-authors = [
-    {name = "SciCoverGen Team", email = "scicovergen@example.com"},
-]
-keywords = ["科研封面", "论文封面", "学术海报", "图像生成", "AI绘图", "Cogview", "智谱"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Education",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Multimedia :: Graphics",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Operating System :: OS Independent",
-]
-dependencies = [
-    "requests>=2.25.0",
-]
-
-[project.optional-dependencies]
-pdf = [
-    "pdfplumber>=0.6.0",
-]
-dev = [
-    "pytest>=6.0",
-    "black>=21.0",
-    "flake8>=3.9",
-]
-all = [
-    "pdfplumber>=0.6.0",
-    "pytest>=6.0",
-    "black>=21.0",
-    "flake8>=3.9",
-]
-
-[project.urls]
-Homepage = "https://github.com/luka9367/SciCoverGen"
-Documentation = "https://github.com/luka9367/SciCoverGen/tree/main/docs"
-Repository = "https://github.com/luka9367/SciCoverGen"
-Issues = "https://github.com/luka9367/SciCoverGen/issues"
-
-[project.scripts]
-scicovergen = "scicovergen.cli:main"
 
 [tool.black]
 line-length = 100
