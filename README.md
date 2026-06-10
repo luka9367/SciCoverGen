@@ -29,7 +29,7 @@ SciCoverGen 是一款专为科研新手打造的封面自动生成工具。只�
 - **智能分析**：GLM-4-Flash 自动分析内容，精准提取视觉元素
 - **国产化**：纯国产 API，数据不出境，安全可靠
 - **免费使用**：对接 Cogview-3-Flash 免费模型，零成本科研辅助
-- **多格式支持**：支持 Markdown、TXT、PDF 等多种输入格式
+- **多格式支持**：支持 Markdown、TXT、**PDF 论文**等多种输入格式
 
 ### 快速开始
 
@@ -39,6 +39,8 @@ SciCoverGen 是一款专为科研新手打造的封面自动生成工具。只�
 pip install scicovergen
 ```
 
+> PDF 支持需额外安装（可选）：`pip install pdfplumber`
+
 #### 2. 获取免费 API Key
 
 1. 访问 [智谱开放平台](https://open.bigmodel.cn/)
@@ -47,6 +49,8 @@ pip install scicovergen
 
 #### 3. 生成你的第一个封面
 
+**方式一：Python 代码**
+
 ```python
 import os
 from scicovergen import SciCoverGen
@@ -54,17 +58,63 @@ from scicovergen import SciCoverGen
 # 设置 API Key
 os.environ["ZHIPU_API_KEY"] = "your-api-key"
 
-# 创建生成器并生成封面
+# 创建生成器
 gen = SciCoverGen()
-gen.generate("your_paper.md", scene="paper_cover")
+
+# 生成论文封面（支持 .md / .txt / .pdf）
+gen.generate("your_paper.pdf", scene="paper_cover")
 ```
 
-或使用命令行：
+**方式二：命令行**
 
 ```bash
+# 设置环境变量
 export ZHIPU_API_KEY=your-api-key
+
+# 生成论文封面
 scicovergen paper.md --scene paper_cover
+
+# 直接传 PDF 论文生成封面
+scicovergen "论文.pdf" --scene paper_cover
+
+# 生成课题报告封面
+scicovergen report.md --scene project_report
+
+# 生成学术海报
+scicovergen poster.md --scene academic_poster
 ```
+
+### PDF 论文生成封面（最常用）
+
+**SciCoverGen 可以直接读取 PDF 论文并生成封面**，无需手动复制粘贴：
+
+```bash
+# 安装 PDF 支持
+pip install pdfplumber
+
+# 一行命令生成封面
+scicovergen "你的论文.pdf" --scene paper_cover -o ./covers
+```
+
+**输出结果：**
+```
+covers/
+├── 论文标题_prompt.txt          # 自动生成的图像 Prompt
+└── 论文标题_cover_20260610.png  # 封面图像
+```
+
+**完整流程：**
+```
+PDF 论文文件
+    ↓ 自动提取文本（pdfplumber）
+    ↓ GLM-4-Flash 智能分析（标题、方法、学科领域...）
+    ↓ 自动选择配色/风格/视觉元素
+    ↓ 生成优化后的英文 Prompt
+    ↓ Cogview-3-Flash 生成封面图像
+    ↓ 保存到本地
+```
+
+> **注意**：PDF 需为文本型（非扫描版图片），否则无法提取文字内容。
 
 ### 三大科研场景
 
@@ -127,6 +177,7 @@ Cogview-3-Flash 图像生成
 | 图像模型 | Gemini/Claude/DALL-E 等境外模型 | **智谱 Cogview-3-Flash（国产免费）** |
 | 数据安全 | 数据出境 | **纯国产链路，数据不出境** |
 | 科研场景 | 无 | **论文/报告/海报三大专属场景** |
+| PDF 支持 | 无 | **直接读取 PDF 生成封面** |
 | 中文支持 | 一般 | **深度优化，适合中文学术内容** |
 | 视觉精度 | 通用 | **学科特定视觉元素库** |
 | 使用成本 | 需付费 | **完全免费** |
@@ -156,7 +207,7 @@ This project is deeply adapted from the [baoyu-cover-image](https://github.com/m
 - **Smart analysis**: GLM-4-Flash automatically analyzes content and extracts precise visual elements
 - **Domestic AI**: Pure domestic API, data stays local, safe and reliable
 - **Free to use**: Integrated with Cogview-3-Flash free model, zero-cost research assistance
-- **Multi-format support**: Supports Markdown, TXT, PDF, and more input formats
+- **Multi-format support**: Supports Markdown, TXT, **PDF papers**, and more input formats
 
 ### Quick Start
 
@@ -166,6 +217,8 @@ This project is deeply adapted from the [baoyu-cover-image](https://github.com/m
 pip install scicovergen
 ```
 
+> PDF support requires additional install (optional): `pip install pdfplumber`
+
 #### 2. Get Free API Key
 
 1. Visit [Zhipu AI Open Platform](https://open.bigmodel.cn/)
@@ -174,24 +227,36 @@ pip install scicovergen
 
 #### 3. Generate Your First Cover
 
+**Python:**
+
 ```python
 import os
 from scicovergen import SciCoverGen
 
-# Set API Key
 os.environ["ZHIPU_API_KEY"] = "your-api-key"
 
-# Create generator and generate cover
 gen = SciCoverGen()
-gen.generate("your_paper.md", scene="paper_cover")
+gen.generate("your_paper.pdf", scene="paper_cover")
 ```
 
-Or use CLI:
+**CLI:**
 
 ```bash
 export ZHIPU_API_KEY=your-api-key
 scicovergen paper.md --scene paper_cover
+scicovergen "paper.pdf" --scene paper_cover
 ```
+
+### PDF Paper Cover Generation
+
+**SciCoverGen can directly read PDF papers and generate covers** without manual copy-paste:
+
+```bash
+pip install pdfplumber
+scicovergen "your_paper.pdf" --scene paper_cover -o ./covers
+```
+
+> **Note**: PDF must be text-based (not scanned images) to extract text content.
 
 ### Three Research Scenarios
 
