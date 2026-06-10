@@ -77,7 +77,7 @@ class TestPromptBuilder(unittest.TestCase):
         prompt = PromptBuilder.build_academic_poster_prompt(analysis)
 
         self.assertIn("Poster Title", prompt)
-        self.assertIn("bold", prompt)
+        self.assertIn("Bold", prompt)
 
 
 if __name__ == "__main__":
